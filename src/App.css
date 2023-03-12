@@ -40,3 +40,15 @@
 ul{
   list-style-type: none;
 }
+.student-form{
+  text-align: center;
+}
+.student-section{
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.list{
+  border: 1px solid black;
+}
