@@ -1,169 +1,136 @@
 // import SkillSection from "./SkillSection";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 const App = () => {
-  const [studentName, setStudentName] = useState("");
-  const [students, setStudents] = useState([]);
+  const [notes, setNotes] = useState([]);
+  const [notetitle, setNotetitle] = useState("");
   const [editMode, setEditMode] = useState(false);
-  const [editableStudent, setEditableStudent] = useState(null);
+  const [editableNote, setEditableNote] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const createStudentHandler = (e) => {
-    e.preventDefault();
-    if (!studentName) {
-      return alert("please provide a valid name");
+  const getAllNotes = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/notes");
+      if (!response.ok) {
+        throw new Error("Something went wrong");
+      }
+      const data = await response.json();
+      setNotes(data);
+      setNotetitle("");
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      setErrorMessage(error.message);
     }
-    const newStudent = {
+  };
+
+  const createHandler = (e) => {
+    e.preventDefault();
+    if (!notetitle) {
+      return alert("Please enter valid title");
+    }
+    const newNote = {
       id: Date.now() + "",
-      name: studentName,
-      // isPresent : undefined
+      title: notetitle,
     };
-    setStudents([...students, newStudent]);
-    setStudentName("");
+    fetch("http://localhost:8080/notes", {
+      method: "POST",
+      body: JSON.stringify(newNote),
+      headers: {
+        "Content-type": "application/json",
+      },
+    }).then(() => {
+      getAllNotes();
+    });
   };
 
   const removeHandler = (id) => {
-    // const newstudentList = students.filter((item)=>item.id !== id);
-    // setStudents(newstudentList);
-    setStudents(students.filter((item) => item.id !== id));
-  };
-
-  const editHandler = (id) => {
-    const toBeEditedStudent = students.find((item) => item.id === id);
-    setEditMode(true);
-    setEditableStudent(toBeEditedStudent);
-    setStudentName(toBeEditedStudent.name);
-  };
-
-  const updateHandler = (e) => {
-    e.preventDefault();
-    if (!studentName) {
-      return alert("please provide a valid name");
-    }
-    const newstudentList = students.map((item) => {
-      if (item.id === editableStudent.id) {
-        item.name = studentName;
-      }
-      return item;
+    fetch(`http://localhost:8080/notes/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      getAllNotes();
     });
-    setStudents(newstudentList);
-    setStudentName("");
-    setEditMode(false);
-    setEditableStudent(null);
   };
 
-  const presentHandler = (id) => {
-    const newstudentList = students.map((item) => {
-      if (item.id == id) {
-        if (item.isPresent === undefined) {
-          item.isPresent = true;
-        } else if (item.isPresent === true) {
-          alert("This student is already in present list");
-        } else if (item.isPresent === false) {
-          alert("Please make use of accidentally added button");
-        }
-      }
-      return item;
-    });
-    setStudents(newstudentList);
-  };
+  // const editHandler = (id) => {
+  //   const toBeEditedNote = notes.find((item) => item.id === id); // 1 === 1;
 
-  const absentHandler = (id) => {
-    const newstudentList = students.map((item) => {
-      if (item.id == id) {
-        if (item.isPresent === undefined) {
-          item.isPresent = false;
-        } else if (item.isPresent === true) {
-          alert("Please make use of accidentally added button");
-        } else if (item.isPresent === false) {
-          alert(" This student is already in absent list");
-        }
-      }
-      return item;
-    });
-    setStudents(newstudentList);
-  };
+  //   setEditMode(true);
+  //   setEditableNote(toBeEditedNote);
+  //   setNotetitle(toBeEditedNote.title);
+  // };
 
-  const toggleHandler = (id) => {
-    const newstudentList = students.map((item) => {
-      if (item.id == id) {
-        item.isPresent = !item.isPresent
-      }
-      return item;
-    });
-    setStudents(newstudentList);
-  }
+  // const updateHandler = (e) => {
+  //   e.preventDefault();
+  //   if (!notetitle) {
+  //     return alert(`Please Provide a valid title`);
+  //   }
 
+  //   // const newNotes = notes.map((item) => {
+  //   //   // 2
+  //   //   if (item.id === editableNote.id) {
+  //   //     item.title = notetitle;
+  //   //   }
+
+  //   //   return item;
+  //   // });
+  
+  //   fetch(`http://localhost:8080/notes`, {
+  //     method: "PUT",
+  //     body: JSON.stringify(notes.map((item) => {
+  //       // 2
+  //       if (item.id === editableNote.id) {
+  //         item.title = notetitle;
+  //       }
+  
+  //       return item;
+  //     })),
+  //     headers: {
+  //       "Content-type": "application/json; charset=UTF-8",
+  //     },
+  //   }).then(() => {
+  //     getAllNotes();
+  //   });
+
+  //   // setNotes(newNotes);
+  //   setEditMode(false);
+  //   setEditableNote(null);
+  //   setNotetitle("");
+  // };
+
+  useEffect(() => {
+    getAllNotes();
+  }, []);
   return (
-    <div>
-      <form
-        onSubmit={(e) =>
-          editMode ? updateHandler(e) : createStudentHandler(e)
-        }
-        className="student-form"
-      >
+    <div className="App">
+      <form onSubmit={createHandler}>
         <input
           type="text"
-          value={studentName}
-          onChange={(e) => setStudentName(e.target.value)}
+          value={notetitle}
+          onChange={(e) => setNotetitle(e.target.value)}
         ></input>
         <button
-          onClick={(e) =>
-            editMode ? updateHandler(e) : createStudentHandler(e)
-          }
           type="submit"
+          onClick={(e) => {
+            editMode ? updateHandler(e) : createHandler(e);
+          }}
         >
-          Add Student
+          {editMode ? "Update Note" : "Create Note"}
         </button>
       </form>
-      <div className="student-section">
-        <div className="list all-student-list">
-          <h2>All Student's list</h2>
-          <ul>
-            {students.map((student) => (
-              <li>
-                <span>{student.name}</span>
-                <button onClick={() => editHandler(student.id)}>Edit</button>
-                <button onClick={() => removeHandler(student.id)}>
-                  Delete
-                </button>
-                <button onClick={() => presentHandler(student.id)}>
-                  Make Present
-                </button>
-                <button onClick={() => absentHandler(student.id)}>
-                  Make Absent
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="list present-student-list">
-          <h2>Present Student's list</h2>
-          <ul>
-            {students
-              .filter((item) => item.isPresent === true)
-              .map((student) => (
-                <li>
-                  <span>{student.name}</span>
-                  <button onClick={() => toggleHandler(student.id)}>Accidentally Added</button>
-                </li>
-              ))}
-          </ul>
-        </div>
-        <div className="list absent-student-list">
-          <h2>Absent Student's list</h2>
-          <ul>
-            {students
-              .filter((item) => item.isPresent === false)
-              .map((student) => (
-                <li>
-                  <span>{student.name}</span>
-                  <button onClick={() => toggleHandler(student.id)}>Accidentally Added</button>
-                </li>
-              ))}
-          </ul>
-        </div>
-      </div>
+      <ul>
+        {notes.map((note) => (
+          <li key={note.id}>
+            <span>{note.title}</span>
+            <button onClick={() => editHandler()}>Edit</button>
+            <button onClick={() => removeHandler(note.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+      {isLoading && <div> Loading...........</div>}
+      {errorMessage && <p>{errorMessage}</p>}
     </div>
   );
 };
