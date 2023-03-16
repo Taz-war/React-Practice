@@ -9,6 +9,7 @@ const App = () => {
   const [editableNote, setEditableNote] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [editId, setEditId] = useState("");
 
   const getAllNotes = async () => {
     try {
@@ -54,57 +55,50 @@ const App = () => {
     });
   };
 
-  // const editHandler = (id) => {
-  //   const toBeEditedNote = notes.find((item) => item.id === id); // 1 === 1;
 
-  //   setEditMode(true);
-  //   setEditableNote(toBeEditedNote);
-  //   setNotetitle(toBeEditedNote.title);
-  // };
 
-  // const updateHandler = (e) => {
-  //   e.preventDefault();
-  //   if (!notetitle) {
-  //     return alert(`Please Provide a valid title`);
-  //   }
+  const editHandler = (id) => {
+    const toBeEditedNote = notes.find((item) => item.id === id); // 1 === 1;
 
-  //   // const newNotes = notes.map((item) => {
-  //   //   // 2
-  //   //   if (item.id === editableNote.id) {
-  //   //     item.title = notetitle;
-  //   //   }
+    setEditId(toBeEditedNote.id)
+    setEditMode(true);
+    setEditableNote(toBeEditedNote);
+    setNotetitle(toBeEditedNote.title);
+  };
 
-  //   //   return item;
-  //   // });
+
+  const updateHandler = (e) => {
+    e.preventDefault();
+    if (!notetitle) {
+      return alert(`Please Provide a valid title`);
+    }
+
+    const editNote = notes.filter((item) => item.id === editId);
+    editNote[0].title = notetitle;
+
   
-  //   fetch(`http://localhost:8080/notes`, {
-  //     method: "PUT",
-  //     body: JSON.stringify(notes.map((item) => {
-  //       // 2
-  //       if (item.id === editableNote.id) {
-  //         item.title = notetitle;
-  //       }
-  
-  //       return item;
-  //     })),
-  //     headers: {
-  //       "Content-type": "application/json; charset=UTF-8",
-  //     },
-  //   }).then(() => {
-  //     getAllNotes();
-  //   });
+    fetch(`http://localhost:8080/notes/${editId}`, {
+      method: "PUT",
+      body: JSON.stringify(editNote[0]),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    }).then(() => {
+      getAllNotes();
+    });
 
-  //   // setNotes(newNotes);
-  //   setEditMode(false);
-  //   setEditableNote(null);
-  //   setNotetitle("");
-  // };
+    setEditMode(false);
+    setEditableNote(null);
+    setNotetitle("");
+  };
 
   useEffect(() => {
     getAllNotes();
   }, []);
   return (
     <div className="App">
+      
+      {/* {JSON.stringify(editableNote)} */}
       <form onSubmit={createHandler}>
         <input
           type="text"
@@ -124,7 +118,7 @@ const App = () => {
         {notes.map((note) => (
           <li key={note.id}>
             <span>{note.title}</span>
-            <button onClick={() => editHandler()}>Edit</button>
+            <button onClick={() => editHandler(note.id)}>Edit</button>
             <button onClick={() => removeHandler(note.id)}>Delete</button>
           </li>
         ))}
