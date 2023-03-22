@@ -1,13 +1,21 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import BoardProvider from "./contexts/Board";
+import ListProvider from "./contexts/List";
+import TaskProvider from "./contexts/Task";
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <App />
+    <BoardProvider>
+      <ListProvider>
+        <TaskProvider>
+          <App />
+        </TaskProvider>
+      </ListProvider>
+    </BoardProvider>
   </React.StrictMode>
 );
 
