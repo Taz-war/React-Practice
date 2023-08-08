@@ -2,8 +2,8 @@ export const boardReducer = (boards,action) => {
     switch (action.type) {
         case 'CREATE_BOARD':{
             const board ={
-                id: action.payload.id,
-                title:action.payload.title,
+                id: Date.now() + '',
+                title: action.payload,
                 lists:[],
                 tasks:[]
             }
@@ -42,6 +42,7 @@ export const boardReducer = (boards,action) => {
                 if (item.id === action.payload.id) {
                     item.lists = item.lists.filter(list => list !== action.payload.listId)
                 }
+                return item
             })
         }
         case 'REMOVE_TASK_ID_FROM_A_BOARD':{
@@ -49,6 +50,7 @@ export const boardReducer = (boards,action) => {
                 if (item.id === action.payload.id) {
                     item.tasks = item.tasks.filter(task => task !== action.payload.taskId)
                 }
+                return item
             })
         }
           
